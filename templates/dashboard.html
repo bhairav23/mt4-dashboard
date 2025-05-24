@@ -4,52 +4,95 @@
   <title>MT4 Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="refresh" content="1">
+
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+
   <style>
-    body { font-family: Arial; padding: 10px; margin: 0; }
-    h2 { font-size: 20px; text-align: center; margin-top: 10px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { text-align: left; border: 1px solid #ddd; padding: 8px; font-size: 14px; }
-    th { background-color: #222; color: white; cursor: pointer; position: sticky; top: 0; z-index: 2; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
+    body {
+      font-family: Arial;
+      padding: 10px;
+      margin: 0;
+    }
+
+    h2 {
+      font-size: 20px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    th, td {
+      text-align: left;
+      border: 1px solid #ddd;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #222;
+      color: white;
+      cursor: pointer;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
     .highlight-EURUSD { background-color: #e6f2ff !important; }
     .highlight-GBPUSD { background-color: #fff7e6 !important; }
-    .hhighlight-USDJPY { background-color: #e6ffe6 !important; }
+    .highlight-USDJPY { background-color: #e6ffe6 !important; }
     .highlight-USDCHF { background-color: #f9e6ff !important; }
     .highlight-AUDUSD { background-color: #fff0f0 !important; }
-    .highlight-USDCAD { background-color: #e6ffe9 !important; }   /* light mint green */
-    .highlight-NZDUSD { background-color: #fff5e6 !important; }   /* light peach */
-    .highlight-crypto  { background-color: #f0f5ff !important; }   /* light steel blue */
-    .rsi-high { color: red; font-weight: bold; }
-    .rsi-low { color: red; font-weight: bold; }
+    .highlight-USDCAD { background-color: #e6ffe9 !important; }
+    .highlight-NZDUSD { background-color: #fff5e6 !important; }
+    .highlight-crypto  { background-color: #f0f5ff !important; }
+
+    .rsi-high {
+      color: red;
+      font-weight: bold;
+    }
+
     @media (max-width: 768px) {
-      th, td { font-size: 12px; padding: 6px; }
+      th, td {
+        font-size: 12px;
+        padding: 6px;
+      }
     }
   </style>
 </head>
+
 <body>
   <h2>MT4 Account Dashboard</h2>
+
   <table id="dashboard-table" class="display responsive nowrap">
     <thead>
       <tr>
         <th data-priority="1">Label</th>
-        <th data-priority="6">Timestamp</th>
-        <th data-priority="7">Symbol</th>
+        <th data-priority="5">Timestamp</th>
+        <th data-priority="6">Symbol</th>
         <th data-priority="2">Bid</th>
-        <th data-priority="8">Ask</th>
-        <th data-priority="9">Balance</th>
-        <th data-priority="10">Equity</th>
+        <th data-priority="7">Ask</th>
+        <th data-priority="8">Balance</th>
+        <th data-priority="9">Equity</th>
         <th data-priority="3">Floating PnL</th>
         <th data-priority="4">RSI</th>
-        <!--<th data-priority="5">Pips from High/Low</th>-->
-        <th data-priority="11">Buy Orders</th>
-        <th data-priority="12">Sell Orders</th>
-        <th data-priority="13">Buy Lots</th>
-        <th data-priority="14">Sell Lots</th>
+        <th data-priority="10">Buy Orders</th>
+        <th data-priority="11">Sell Orders</th>
+        <th data-priority="12">Buy Lots</th>
+        <th data-priority="13">Sell Lots</th>
       </tr>
     </thead>
     <tbody>
@@ -73,7 +116,6 @@
         <td>{{ acc.equity }}</td>
         <td>{{ acc.floating_pnl }}</td>
         <td class="{% if acc.rsi|float >= 70 or acc.rsi|float <= 30 %}rsi-high{% endif %}">{{ acc.rsi }}</td>
-        <!--<td>{{ acc.distance_from_extreme if acc.distance_from_extreme is defined else 'N/A' }}</td> -->
         <td>{{ acc.buy_orders }}</td>
         <td>{{ acc.sell_orders }}</td>
         <td>{{ acc.buy_lots }}</td>
@@ -82,10 +124,12 @@
       {% endfor %}
     </tbody>
   </table>
+
   <script>
     $(document).ready(function () {
       $('#dashboard-table').DataTable({
-        "pageLength": 50,
+        pageLength: 50,
+        order: [[7, 'asc']],
         responsive: true,
         scrollX: false
       });
