@@ -65,10 +65,40 @@
       font-weight: bold;
     }
 
+    #filter-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
     @media (max-width: 768px) {
       th, td {
         font-size: 12px;
         padding: 6px;
+      }
+
+      thead th,
+      tbody td {
+        display: none;
+      }
+
+      thead th:nth-child(1),
+      thead th:nth-child(4),
+      thead th:nth-child(8),
+      thead th:nth-child(9),
+      tbody td:nth-child(1),
+      tbody td:nth-child(4),
+      tbody td:nth-child(8),
+      tbody td:nth-child(9) {
+        display: table-cell;
+      }
+
+      #filter-wrapper,
+      div.dataTables_filter {
+        justify-content: flex-end;
+        text-align: right;
       }
     }
   </style>
@@ -76,6 +106,11 @@
 
 <body>
   <h2>MT4 Account Dashboard</h2>
+
+  <div id="filter-wrapper">
+    <label><input type="checkbox" id="toggle-zero-pnl"> 0 PnL</label>
+    <label><input type="checkbox" id="toggle-neutral-rsi"> RSI</label>
+  </div>
 
   <table id="dashboard-table" class="display responsive nowrap">
     <thead>
@@ -87,7 +122,7 @@
         <th data-priority="7">Ask</th>
         <th data-priority="8">Balance</th>
         <th data-priority="9">Equity</th>
-        <th data-priority="3">PnL</th>
+        <th data-priority="3">Floating PnL</th>
         <th data-priority="4">RSI</th>
         <th data-priority="10">Buy Orders</th>
         <th data-priority="11">Sell Orders</th>
@@ -98,6 +133,8 @@
     <tbody>
       {% for acc in accounts %}
       <tr class="
+        {% if acc.floating_pnl|float == 0 %}pnl-zero {% endif %}
+        {% if acc.rsi|float > 35 and acc.rsi|float < 65 %}rsi-neutral {% endif %}
         {% if 'EURUSD' in acc.label %}highlight-EURUSD
         {% elif 'GBPUSD' in acc.label %}highlight-GBPUSD
         {% elif 'USDJPY' in acc.label %}highlight-USDJPY
@@ -127,7 +164,7 @@
 
   <script>
     $(document).ready(function () {
-      $('#dashboard-table').DataTable({
+      const table = $('#dashboard-table').DataTable({
         //pageLength: 50,
         paging: false,
         info: false,
@@ -136,6 +173,27 @@
         responsive: true,
         scrollX: false
       });
+
+      function updateRowVisibility() {
+        const showZeroPnl = $('#toggle-zero-pnl').is(':checked');
+        const showNeutralRsi = $('#toggle-neutral-rsi').is(':checked');
+
+        $('#dashboard-table tbody tr').each(function () {
+          const row = $(this);
+          const isZeroPnl = row.hasClass('pnl-zero');
+          const isNeutralRsi = row.hasClass('rsi-neutral');
+
+          let visible = true;
+          if (!showZeroPnl && isZeroPnl) visible = false;
+          if (!showNeutralRsi && isNeutralRsi) visible = false;
+
+          row.toggle(visible);
+        });
+      }
+
+      $('#toggle-zero-pnl, #toggle-neutral-rsi').on('change', updateRowVisibility);
+
+      updateRowVisibility();
     });
   </script>
 </body>
