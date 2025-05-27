@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse
 from fastapi.responses import HTMLResponse
 import json
 import os
@@ -23,13 +24,13 @@ FILES = [
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\7E3397ECF4F42954AC1976AD5CF50931\MQL4\Files\USDJPYSS.json",
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\11D0BEBBEAA63FB82CB4040F79DEE8B3\MQL4\Files\USDJPYHT.json",
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\55C1A8D08858E57EA6A080170A23C6D1\MQL4\Files\USDJPYHG.json",
-    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\B686031306FA71A7EDC549C88C8E2CE7\MQL4\Files\USDCHFNR.json",
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\37BA1BD2793428766ED8BC7285FA1954\MQL4\Files\USDCHFNR.json",
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\BCDF3193997AF4A518724582ACF4E5D3\MQL4\Files\USDCHFSS.json",
-    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\B686031306FA71A7EDC549C88C8E2CE7\MQL4\Files\AUDUSDNR.json",
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\601F073C9662E6589B3F85C56B84B187\MQL4\Files\AUDUSDNR.json",
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\967EEDCA58CB61A2CE8359388E4C4EFB\MQL4\Files\AUDUSDSS.json",
-    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\B686031306FA71A7EDC549C88C8E2CE7\MQL4\Files\USDCADNR.json",
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\CDE56DB9BDBBF14E046BA6E336621325\MQL4\Files\USDCADNR.json",
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\3445BE35A936A2EBEFE763C98ACCD25B\MQL4\Files\USDCADSS.json",
-    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\B686031306FA71A7EDC549C88C8E2CE7\MQL4\Files\NZDUSDNR.json",
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\F6366C7A96F6BE09F5026FBC4914EBB6\MQL4\Files\NZDUSDNR.json",
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\A9819A759F3A19AA674A4E0383D4E24D\MQL4\Files\NZDUSDSS.json",
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\A26EE4CBF3F654FE4025023D7A5FE743\MQL4\Files\Cryptoknight.json",
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\6A2F409B1AE6CC37A50A53CBBD33ED97\MQL4\Files\Cryptotic.json"
@@ -104,8 +105,6 @@ def read_latest_json(full_path, retries=3, delay=0.1):
     return None
 
 
-
-
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     accounts = []
@@ -114,6 +113,15 @@ async def dashboard(request: Request):
         if data:
             accounts.append(data)
     return templates.TemplateResponse("dashboard.html", {"request": request, "accounts": accounts})
+
+@app.get("/data")
+async def get_data():
+    accounts = []
+    for path in FILES:
+        data = read_latest_json(path)
+        if data:
+            accounts.append(data)
+    return JSONResponse(content={"accounts": accounts})
 
 if __name__ == "__main__":
     import uvicorn

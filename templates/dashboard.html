@@ -1,13 +1,11 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <title>MT4 Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="1">
-
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
-
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
@@ -51,13 +49,14 @@
       background-color: #f2f2f2;
     }
 
-    .highlight-NR { background-color: #e6f2ff !important; }      /* Soft Blue */
-    .highlight-SS { background-color: #e6ffe6 !important; }      /* Light Green */
-    .highlight-HT { background-color: #fff7e6 !important; }      /* Light Orange */
-    .highlight-HG { background-color: #ffe6e6 !important; }      /* Light Red */
-    .highlight-AG { background-color: #f0f0ff !important; }      /* Lavender */
-    .highlight-Crypto { background-color: #f0f5ff !important; }  /* Steel Blue */
-
+    .highlight-EURUSD { background-color: #e6f2ff !important; }
+    .highlight-GBPUSD { background-color: #fff7e6 !important; }
+    .highlight-USDJPY { background-color: #e6ffe6 !important; }
+    .highlight-USDCHF { background-color: #f9e6ff !important; }
+    .highlight-AUDUSD { background-color: #fff0f0 !important; }
+    .highlight-USDCAD { background-color: #e6ffe9 !important; }
+    .highlight-NZDUSD { background-color: #e6f9f0 !important; }
+    .highlight-crypto  { background-color: #f0f5ff !important; }
 
     .rsi-high {
       color: red;
@@ -102,7 +101,6 @@
     }
   </style>
 </head>
-
 <body>
   <h2>MT4 Account Dashboard</h2>
 
@@ -114,55 +112,77 @@
   <table id="dashboard-table" class="display responsive nowrap">
     <thead>
       <tr>
-        <th data-priority="1">Label</th>
-        <th data-priority="5">Timestamp</th>
-        <th data-priority="6">Symbol</th>
-        <th data-priority="2">Bid</th>
-        <th data-priority="7">Ask</th>
-        <th data-priority="8">Balance</th>
-        <th data-priority="9">Equity</th>
-        <th data-priority="3">Floating PnL</th>
-        <th data-priority="4">RSI</th>
-        <th data-priority="10">Buy Orders</th>
-        <th data-priority="11">Sell Orders</th>
-        <th data-priority="12">Buy Lots</th>
-        <th data-priority="13">Sell Lots</th>
+        <th>Label</th>
+        <th>Timestamp</th>
+        <th>Symbol</th>
+        <th>Bid</th>
+        <th>Ask</th>
+        <th>Balance</th>
+        <th>Equity</th>
+        <th>Floating PnL</th>
+        <th>RSI</th>
+        <th>Buy Orders</th>
+        <th>Sell Orders</th>
+        <th>Buy Lots</th>
+        <th>Sell Lots</th>
       </tr>
     </thead>
     <tbody>
-      {% for acc in accounts %}
-      <tr class="
-        {% if acc.floating_pnl|float == 0 %}pnl-zero {% endif %}
-        {% if acc.rsi|float > 35 and acc.rsi|float < 65 %}rsi-neutral {% endif %}
-        {% if 'NR' in acc.label %}highlight-NR
-        {% elif 'SS' in acc.label %}highlight-SS
-        {% elif 'HT' in acc.label %}highlight-HT
-        {% elif 'HG' in acc.label %}highlight-HG
-        {% elif 'AG' in acc.label %}highlight-AG
-        {% elif 'Crypto' in acc.label %}highlight-Crypto
-        {% endif %}">
-        <td>{{ acc.label }}</td>
-        <td>{{ acc.timestamp }}</td>
-        <td>{{ acc.symbol }}</td>
-        <td>{{ acc.bid }}</td>
-        <td>{{ acc.ask }}</td>
-        <td>{{ acc.balance }}</td>
-        <td>{{ acc.equity }}</td>
-        <td>{{ acc.floating_pnl }}</td>
-        <td class="{% if acc.rsi|float >= 70 or acc.rsi|float <= 30 %}rsi-high{% endif %}">{{ acc.rsi }}</td>
-        <td>{{ acc.buy_orders }}</td>
-        <td>{{ acc.sell_orders }}</td>
-        <td>{{ acc.buy_lots }}</td>
-        <td>{{ acc.sell_lots }}</td>
-      </tr>
-      {% endfor %}
     </tbody>
   </table>
 
   <script>
+    function updateRowVisibility() {
+      const showZeroPnl = $('#toggle-zero-pnl').is(':checked');
+      const showNeutralRsi = $('#toggle-neutral-rsi').is(':checked');
+
+      $('#dashboard-table tbody tr').each(function () {
+        const row = $(this);
+        const isZeroPnl = row.hasClass('pnl-zero');
+        const isNeutralRsi = row.hasClass('rsi-neutral');
+
+        let visible = true;
+        if (!showZeroPnl && isZeroPnl) visible = false;
+        if (!showNeutralRsi && isNeutralRsi) visible = false;
+
+        row.toggle(visible);
+      });
+    }
+
+    function fetchDataAndUpdateTable() {
+      $.getJSON('/data', function(response) {
+        const table = $('#dashboard-table').DataTable();
+        table.clear();
+
+        response.accounts.forEach(function(acc) {
+          const rsiClass = (parseFloat(acc.rsi) >= 70 || parseFloat(acc.rsi) <= 30) ? 'rsi-high' : '';
+          const pnlZeroClass = parseFloat(acc.floating_pnl) === 0 ? 'pnl-zero' : '';
+          const rsiNeutralClass = (parseFloat(acc.rsi) > 35 && parseFloat(acc.rsi) < 65) ? 'rsi-neutral' : '';
+
+          table.row.add([
+            `<span class="${pnlZeroClass} ${rsiNeutralClass}">${acc.label}</span>`,
+            acc.timestamp,
+            acc.symbol,
+            acc.bid,
+            acc.ask,
+            acc.balance,
+            acc.equity,
+            acc.floating_pnl,
+            `<span class="${rsiClass}">${acc.rsi}</span>`,
+            acc.buy_orders,
+            acc.sell_orders,
+            acc.buy_lots,
+            acc.sell_lots
+          ]);
+        });
+
+        table.draw();
+        updateRowVisibility();
+      });
+    }
+
     $(document).ready(function () {
-      const table = $('#dashboard-table').DataTable({
-        //pageLength: 50,
+      $('#dashboard-table').DataTable({
         paging: false,
         info: false,
         searching: true,
@@ -171,26 +191,10 @@
         scrollX: false
       });
 
-      function updateRowVisibility() {
-        const showZeroPnl = $('#toggle-zero-pnl').is(':checked');
-        const showNeutralRsi = $('#toggle-neutral-rsi').is(':checked');
-
-        $('#dashboard-table tbody tr').each(function () {
-          const row = $(this);
-          const isZeroPnl = row.hasClass('pnl-zero');
-          const isNeutralRsi = row.hasClass('rsi-neutral');
-
-          let visible = true;
-          if (!showZeroPnl && isZeroPnl) visible = false;
-          if (!showNeutralRsi && isNeutralRsi) visible = false;
-
-          row.toggle(visible);
-        });
-      }
-
       $('#toggle-zero-pnl, #toggle-neutral-rsi').on('change', updateRowVisibility);
 
-      updateRowVisibility();
+      fetchDataAndUpdateTable();
+      setInterval(fetchDataAndUpdateTable, 1000);
     });
   </script>
 </body>
