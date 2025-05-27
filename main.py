@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 import json
 import os
+import time
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -61,36 +62,49 @@ FRIENDLY_NAMES = {
 "Cryptotic.json": "Cryptotic"
 }
 
-def read_latest_json(full_path):
+def read_latest_json(full_path, retries=3, delay=0.1):
     if not os.path.exists(full_path):
         return None
-    with open(full_path, "r") as f:
-        lines = f.readlines()
-        if not lines:
-            return None
+
+    for attempt in range(retries):
         try:
-            data = json.loads(lines[-1])
+            with open(full_path, "r") as f:
+                lines = f.readlines()
+                if not lines:
+                    return None
+                try:
+                    data = json.loads(lines[-1])
+                except json.JSONDecodeError:
+                    return None
 
-            # 🛡️ Set defaults for missing fields
-            data.setdefault("label", FRIENDLY_NAMES.get(os.path.basename(full_path), "Unknown"))
-            data.setdefault("timestamp", "N/A")
-            data.setdefault("symbol", "N/A")
-            data.setdefault("bid", "N/A")
-            data.setdefault("ask", "N/A")
-            data.setdefault("balance", "N/A")
-            data.setdefault("equity", "N/A")
-            data.setdefault("floating_pnl", "N/A")
-            data.setdefault("rsi", None)
-            data.setdefault("distance_from_extreme", None)
-            data.setdefault("buy_orders", "N/A")
-            data.setdefault("sell_orders", "N/A")
-            data.setdefault("buy_lots", "N/A")
-            data.setdefault("sell_lots", "N/A")
+                data.setdefault("label", FRIENDLY_NAMES.get(os.path.basename(full_path), "Unknown"))
+                data.setdefault("timestamp", "N/A")
+                data.setdefault("symbol", "N/A")
+                data.setdefault("bid", "N/A")
+                data.setdefault("ask", "N/A")
+                data.setdefault("balance", "N/A")
+                data.setdefault("equity", "N/A")
+                data.setdefault("floating_pnl", "N/A")
+                data.setdefault("rsi", None)
+                data.setdefault("distance_from_extreme", None)
+                data.setdefault("buy_orders", "N/A")
+                data.setdefault("sell_orders", "N/A")
+                data.setdefault("buy_lots", "N/A")
+                data.setdefault("sell_lots", "N/A")
 
-            return data
+                return data
+
+        except PermissionError:
+            time.sleep(delay)  # wait and retry
         except Exception as e:
-            print(f"Error parsing {full_path}: {e}")
+            print(f"[ERROR] Failed to read {full_path}: {e}")
             return None
+
+    print(f"[WARNING] Could not read {full_path} after {retries} retries.")
+    return None
+
+
+
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):

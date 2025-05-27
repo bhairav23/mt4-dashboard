@@ -51,14 +51,13 @@
       background-color: #f2f2f2;
     }
 
-    .highlight-EURUSD { background-color: #e6f2ff !important; }
-    .highlight-GBPUSD { background-color: #fff7e6 !important; }
-    .highlight-USDJPY { background-color: #e6ffe6 !important; }
-    .highlight-USDCHF { background-color: #f9e6ff !important; }
-    .highlight-AUDUSD { background-color: #fff0f0 !important; }
-    .highlight-USDCAD { background-color: #e6ffe9 !important; }
-    .highlight-NZDUSD { background-color: #e6f9f0 !important; }
-    .highlight-crypto  { background-color: #f0f5ff !important; }
+    .highlight-NR { background-color: #e6f2ff !important; }      /* Soft Blue */
+    .highlight-SS { background-color: #e6ffe6 !important; }      /* Light Green */
+    .highlight-HT { background-color: #fff7e6 !important; }      /* Light Orange */
+    .highlight-HG { background-color: #ffe6e6 !important; }      /* Light Red */
+    .highlight-AG { background-color: #f0f0ff !important; }      /* Lavender */
+    .highlight-Crypto { background-color: #f0f5ff !important; }  /* Steel Blue */
+
 
     .rsi-high {
       color: red;
@@ -135,14 +134,12 @@
       <tr class="
         {% if acc.floating_pnl|float == 0 %}pnl-zero {% endif %}
         {% if acc.rsi|float > 35 and acc.rsi|float < 65 %}rsi-neutral {% endif %}
-        {% if 'EURUSD' in acc.label %}highlight-EURUSD
-        {% elif 'GBPUSD' in acc.label %}highlight-GBPUSD
-        {% elif 'USDJPY' in acc.label %}highlight-USDJPY
-        {% elif 'USDCHF' in acc.label %}highlight-USDCHF
-        {% elif 'AUDUSD' in acc.label %}highlight-AUDUSD
-        {% elif 'USDCAD' in acc.label %}highlight-USDCAD
-        {% elif 'NZDUSD' in acc.label %}highlight-NZDUSD
-        {% elif 'Crypto' in acc.label %}highlight-crypto
+        {% if 'NR' in acc.label %}highlight-NR
+        {% elif 'SS' in acc.label %}highlight-SS
+        {% elif 'HT' in acc.label %}highlight-HT
+        {% elif 'HG' in acc.label %}highlight-HG
+        {% elif 'AG' in acc.label %}highlight-AG
+        {% elif 'Crypto' in acc.label %}highlight-Crypto
         {% endif %}">
         <td>{{ acc.label }}</td>
         <td>{{ acc.timestamp }}</td>
